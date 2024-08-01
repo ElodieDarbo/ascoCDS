@@ -7,16 +7,21 @@
 ###################################### TRAINING and TEST SETS PREPARATION ##########################
 ####################################################################################################
 ####################################################################################################
-# Main function
+# Main function to build datasets for classification
+# This function splits the data into training and test sets based on different 
+# sampling strategies (V1, V3, smote) for various classification levels and stratification sublevels.
+
 build_datasets <- function(Liste_data,for_col,features,name_files,select_sampling,over=1){
   strates <- rev(c("subphylum","class", "order", "superfamily", "genus","species"))
   s <- which(strates==for_col)
   set.seed(2023)
-  Liste_data$test <- downsample(Liste_data$test,cat_col = for_col, id_method = "n_rows_c")
+   # Downsample the test dataset by keeping balanced subcategories
+    Liste_data$test <- downsample(Liste_data$test,cat_col = for_col, id_method = "n_rows_c")
     print(colnames(Liste_data$test))
     res <- lapply(1:s,function(x,Liste_data,for_col,features,strates,name_files,select_sampling){
     cl <- strates[x]
     name_files <- paste0(name_files,"_by_col_",cl)
+    # Check if the file already exists, otherwise generate and save it
     if (file.exists(paste0(name_files,".RData"))){
       message("File ",paste0(name_files,".RData")," already exists")
     } else {
@@ -32,12 +37,16 @@ build_datasets <- function(Liste_data,for_col,features,name_files,select_samplin
 
 
 #######################
-# downsample categories by keeping balanced subcategories
+# Function to downsample categories by keeping balanced subcategories
+# This function ensures that each category is represented proportionally
+# based on the minimum number of classes per subcategory.
+
 sample_data_by_stratification <- function(Data,by_col,for_col,min_f_classes) {
   
   f_classes= names(table(Data[for_col]))
   one_class=NULL
   tmp_train=NULL
+  # Balance each class based on the specified subcategories
   for (cl in 1:length(f_classes)){
     one_class=Data[Data[for_col]==f_classes[cl],]
     nb_classes= dim(table(droplevels(one_class[by_col])))
@@ -50,7 +59,10 @@ sample_data_by_stratification <- function(Data,by_col,for_col,min_f_classes) {
 }
 
 #######################
-# find.thr.dataset
+# # Function to determine the threshold for dataset sampling
+# This function calculates the optimal size of each class for stratified sampling 
+# using different strategies like V3 and smote.
+
 find.thr.dataset <- function(train,for_col,opt,features=NULL,over=NULL){
   all.levels <- c("subphylum","class", "order", "superfamily", "genus","species")
   i <- which(all.levels==for_col)
@@ -92,7 +104,10 @@ find.thr.dataset <- function(train,for_col,opt,features=NULL,over=NULL){
 
 
 #######################
-# apply sampling according to stategies
+# Function to apply sampling strategies
+# This function selects and applies the appropriate sampling strategy (V1, V3, smote)
+# to create balanced training and test datasets.
+
 sample_data <- function(Liste_data, by_col, for_col, select_sampling, features,annotation=NULL,over) {
     if (select_sampling == "V1") {
       set.seed(20231)
@@ -127,20 +142,27 @@ sample_data <- function(Liste_data, by_col, for_col, select_sampling, features,a
 #################### CLASSIFICATION, EVALUATION, EXPLAINABILITY ####################################
 ####################################################################################################
 ####################################################################################################
-# Main function to launch classification tasks, model evaluations and explainability for all stratification sublevels 
+# Main function to launch classification tasks, model evaluations, and explainability analysis
+# This function iterates over stratification sublevels, running the specified classification method,
+# and optionally computing Shapley values for model explainability.
+
 run_all_classifications <- function(for_col,k,features,res.dir,select_sampling,met_classif,shap=F){
   strates <- rev(c("subphylum","class", "order", "superfamily", "genus","species"))
   s <- which(strates==for_col)
+ # Iterate over stratification levels and load the corresponding dataset for classification
   results_liste <- mclapply(1:s,function(x,k,for_col,features,strates,res.dir,select_sampling,met_classif,n_neighbors){
     cl <- strates[x]
     i <- which(c("subphylum","class", "order", "superfamily", "genus","species")==cl)
     data_file <- file.path(res.dir,"datasets",paste0("fold",k,"_",select_sampling,"_",for_col,"_by_col_",cl,".RData"))
     res_file <- file.path(res.dir,met_classif,paste0("fold",k,"_",for_col,"_byCol_",cl))
     message("loading ",data_file)
+    # Load the dataset for the current stratification level
     load(data_file)   
     message("Running ",met_classif)
+    # Run the selected classification method on the current dataset
     results_liste <- run_one_classif(liste_by,features,for_col,cl,res.dir,met_classif)
     
+    # If Shapley values are requested, compute them for the training data
     if (shap){
       message("Running Shapley")
       shapleys <- shapleys_for_train(met_classif,results_liste$fit,liste_by$train,cl)
@@ -150,6 +172,7 @@ run_all_classifications <- function(for_col,k,features,res.dir,select_sampling,m
     df <- as.data.frame(results_liste$byClass)
     df$Sampling <- paste0(i,": by ",cl)
     
+    # Save the classification results by class and overall metrics
     message("Writing ",paste0(res_file,"_byClass.txt"))
     write.table(df,file=paste0(res_file,"_byClass.txt"),sep=";")
     df_overall=as.data.frame(results_liste$overall)
@@ -162,7 +185,8 @@ run_all_classifications <- function(for_col,k,features,res.dir,select_sampling,m
     save(results_liste,df,df_overall,file=paste0(res_file,"_classif.RData"))
     return(list(df,df_overall))
   },k,for_col,features,strates,res.dir,select_sampling,met_classif,n_neighbors,mc.cores=s)
-  
+
+  # Aggregate the results across all stratification levels for final output
   overall <- do.call("rbind",lapply(results_liste,function(x) {
     x[[2]]
   }))
@@ -173,15 +197,18 @@ run_all_classifications <- function(for_col,k,features,res.dir,select_sampling,m
 }
 
 ####################
-# Classification task and model evaluation
+# # Function to perform classification and model evaluation
+# This function handles different classification methods (logistic regression, SVM, Random Forest, KNN),
+# runs the classification, and evaluates performance metrics such as confusion matrices.
+
 run_one_classif <- function(liste_sample, features, for_col, by_col, name_file, met_classif) {
-    corr <- cor(liste_sample$train[, features])
-    F_corr = caret::findCorrelation(corr, cutoff = 0.9)
+    # Preprocess training and test datasets
     x_train = liste_sample$train[, features]
     y_train = as.factor(liste_sample$train[, for_col])
     x_test = liste_sample$test[, features]
     y_test = as.factor(liste_sample$test[, for_col])
     
+    # Apply logistic regression (lasso) for classification
     if (met_classif == "rapide") {
       multinom_model <-glmnet(as.data.frame(x_train),
                y_train,
@@ -198,6 +225,7 @@ run_one_classif <- function(liste_sample, features, for_col, by_col, name_file, 
       fit <- multinom_model
       pred_label_test = levels(as.factor(y_test))[max.col(y_predict_test[, , 1])]
     }
+    # Apply SVM with radial kernel for classification
     else if (met_classif == "svm")
     {
       model <- svm(
@@ -213,13 +241,14 @@ run_one_classif <- function(liste_sample, features, for_col, by_col, name_file, 
       fit <- model
 
     }
+    # Apply Random Forest for classification
     else if (met_classif == "RF")
     {
       model.rf = randomForest(x_train, y_train, ntree = 500)
       pred_label_test <- predict(model.rf, newdata = x_test)
       fit <- model.rf
     }
-    
+    # Apply K-Nearest Neighbors for classification
     else if (met_classif == "knn")
     {
       pred_label_test <- knn(
@@ -229,6 +258,7 @@ run_one_classif <- function(liste_sample, features, for_col, by_col, name_file, 
         k = 10
       )
     }
+    # Calculate confusion matrix and overall classification metrics
     conf = caret::confusionMatrix(table(pred_label_test, y_test))
     conf.mat <- as.data.frame.matrix(table(pred_label_test, y_test))
     x_test <- as.data.frame(x_test)
@@ -246,11 +276,15 @@ run_one_classif <- function(liste_sample, features, for_col, by_col, name_file, 
 }
 
 ###################################################################
-# Explainability task: compute shapley values
+# Function to compute Shapley values for model explainability
+# This function calculates Shapley values to assess the contribution of each feature to the prediction,
+# providing insights into the model's decision-making process.
 shapleys_for_train <- function(met_classif,fit,x_train,for_col,by_col){
   categories <- unique(x_train[,for_col])
+  # Loop through each category level and compute Shapley values
   all.shaps <- rbindlist(lapply(categories,function(lev,met_classif,fit,x_train){
     message(lev)
+    # Define the prediction function based on the classification method
     switch(met_classif,
            rapide={
              pfun <- function(object, newdata) {
@@ -277,7 +311,7 @@ shapleys_for_train <- function(met_classif,fit,x_train,for_col,by_col){
                }
     )
     
-    
+    # Process and return the Shapley values for the current level
     shp <- explain(fit, 
                        X = x_train, 
                        pred_wrapper = pfun,
@@ -287,6 +321,7 @@ shapleys_for_train <- function(met_classif,fit,x_train,for_col,by_col){
     shp$class <- lev
     shp
   },met_classif,fit,x_train))
+  # Melt and format the Shapley values for easy visualization
   all.shaps.melt <- melt(all.shaps)
   metrics.tab <- rbind(data.frame(metrics=c("GCsur", "GCcds", "CpG", "GC1", "GC2", "GC3", "G3skew", "A3skew"),group="nucleic sequence"),
                      data.frame(metrics=c("Lcod", "F","Nc", "Psyn", "SCUO"),group="codon composition"),
