@@ -12,10 +12,8 @@ source(file.path(main.dir,"scripts","functions_for_figure.R"))
 
 library(data.table)
 library(factoextra)
-library(FactoMineR)
 
 library(ggplot2)
-library(ggthemes)
 library(pheatmap)
 library(cowplot)
 library(FactoMineR)
