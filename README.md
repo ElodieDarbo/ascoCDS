@@ -176,7 +176,7 @@ Ensure that the classification results are available as this script will process
 
 - myUtils.R: Contains utility functions for exporting graphics.
 - functions_for_classif.R: Includes all functions necessary for dataset preparation and running classification tasks.
-- build_datasets.R: Splits the dataset into training and test sets using various sampling strategies (V1, V3, SMOTE).
+- build_datasets.R: Splits the dataset into training and test sets using various sampling strategies (DB, hBD, hBA).
 - run_classification.R: Executes classification methods (Rapid, KNN, Random Forest, SVM) on the prepared datasets, evaluates performance, and optionally computes Shapley values for explainability.
 - functions_for_figures.R: Functions to assist in generating the figures from the classification results.
 - plots_for_figures.R: Generates plots used in the publication.
