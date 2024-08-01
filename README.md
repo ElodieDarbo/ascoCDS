@@ -45,45 +45,45 @@ The pipeline supports genome annotations from the following sources:
 
 #### Steps to Prepare Data:
 
-##### Genome Annotation and CDS Extraction:
+_**Genome Annotation and CDS Extraction:**_
 - Convert GFF3, GFF2, or EMBL files to CDS FASTA files using provided scripts.
 - Ensure CDS names are unique and verify the integrity of extracted sequences.
 
-##### _CDS Filtration:_
+_**CDS Filtration:**_
 Apply filtration criteria to retain only valid CDS, ensuring they meet length, start codon, stop codon, and nucleotide composition requirements.
 
-##### _Codon Counting:_
+_**Codon Counting:**_
 Count codons for both normal and wobble codon positions.
 
-##### _Sequence-Based Measures:_
+_**Sequence-Based Measures:**_
 Calculate GC content, nucleotide counts, and other sequence-based metrics at the genome and CDS levels.
 
-##### _Codon Usage and Optimal Codons:_
+_**Codon Usage and Optimal Codons:**_
 Determine optimal codons using codonW and calculate related measures such as CAI, CBI, and Fop.
 
-##### _Codon Context Measures:_
+_**Codon Context Measures:**_
 Analyze codon context and compute related metrics like Fpc, Fav, Boc, Ipc, Iav, and Bic.
 
-##### _Protein Composition:_
+_**Protein Composition:**_
 Calculate physico-chemical properties of proteins translated from CDS, including Gravy, Aromo, pI, and II.
 
 #### Pipeline Steps
 
 The pipeline consists of the following steps:
 
-##### _Annotation Conversion:_
+_**Annotation Conversion:**_
 Use gffread or custom scripts to convert annotation files to FASTA format.
 
-##### _CDS Extraction and Filtration:_
+_**CDS Extraction and Filtration:**_
 Run checkCDS.py to filter CDS based on defined criteria.
 
-##### _Codon Counting and Usage Analysis:_
+_**Codon Counting and Usage Analysis:**_
 Run Codon_count_V3.py and codonW to compute codon counts and usage metrics.
 
-##### _Context Census and Sequence Measures:_
+_**Context Census and Sequence Measures:**_
 Execute contextCensus.py to analyze codon contexts and compute related metrics.
 
-##### _Final Measures Aggregation:_
+_**Final Measures Aggregation:**_
 Aggregate all computed measures into final tables for further analysis.
 
 #### Output Files
@@ -97,7 +97,7 @@ The pipeline generates the following output files:
 - Measures: Three files per species (complete, wobble, aminoacid).
 - Taxonomy File: One file (genome-species.csv).
 
-For more detailed information on using the pipeline (command line examples), please refer to the procedure_CDS.md
+For more detailed information on using the pipeline (command line examples), please refer to the **procedure_CDS.md**.
 
 ## Codon Metrics Classification and Analysis Pipeline
 
@@ -181,10 +181,5 @@ Ensure that the classification results are available as this script will process
 - functions_for_figures.R: Functions to assist in generating the figures from the classification results.
 - plots_for_figures.R: Generates plots used in the publication.
 - cmd_launch_analysis.sh: Example bash script to launch build_datasets.R and run_classification.R on a cluster using SLURM.
-
-
-
-
-
 
 
