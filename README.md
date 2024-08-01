@@ -127,13 +127,16 @@ The pipeline is structured into several key components:
     - groupdata2
     - sail
     - pheatmap
+    - cowplot
+    - FactoMineR
+    - factoextra
 
 ### Installation
 
 Install the required R packages:
 
 ```r
-install.packages(c("ggplot2", "caret", "glmnet", "data.table", "e1071", "class", "randomForest", "themis", "groupdata2", "sail", "pheatmap"))
+install.packages(c("ggplot2", "caret", "glmnet", "data.table", "e1071", "class", "randomForest", "themis", "groupdata2", "sail", "pheatmap","cowplot","FactoMineR","factoextra"))
 ```
 
 ### Usage
