@@ -49,41 +49,41 @@ The pipeline supports genome annotations from the following sources:
 - Convert GFF3, GFF2, or EMBL files to CDS FASTA files using provided scripts.
 - Ensure CDS names are unique and verify the integrity of extracted sequences.
 
-##### CDS Filtration:
+##### _CDS Filtration:_
 Apply filtration criteria to retain only valid CDS, ensuring they meet length, start codon, stop codon, and nucleotide composition requirements.
 
-##### Codon Counting:
+##### _Codon Counting:_
 Count codons for both normal and wobble codon positions.
 
-##### Sequence-Based Measures:
+##### _Sequence-Based Measures:_
 Calculate GC content, nucleotide counts, and other sequence-based metrics at the genome and CDS levels.
 
-##### Codon Usage and Optimal Codons:
+##### _Codon Usage and Optimal Codons:_
 Determine optimal codons using codonW and calculate related measures such as CAI, CBI, and Fop.
 
-##### Codon Context Measures:
+##### _Codon Context Measures:_
 Analyze codon context and compute related metrics like Fpc, Fav, Boc, Ipc, Iav, and Bic.
 
-##### Protein Composition:
+##### _Protein Composition:_
 Calculate physico-chemical properties of proteins translated from CDS, including Gravy, Aromo, pI, and II.
 
 #### Pipeline Steps
 
 The pipeline consists of the following steps:
 
-##### Annotation Conversion:
+##### _Annotation Conversion:_
 Use gffread or custom scripts to convert annotation files to FASTA format.
 
-##### CDS Extraction and Filtration:
+##### _CDS Extraction and Filtration:_
 Run checkCDS.py to filter CDS based on defined criteria.
 
-##### Codon Counting and Usage Analysis:
+##### _Codon Counting and Usage Analysis:_
 Run Codon_count_V3.py and codonW to compute codon counts and usage metrics.
 
-##### Context Census and Sequence Measures:
+##### _Context Census and Sequence Measures:_
 Execute contextCensus.py to analyze codon contexts and compute related metrics.
 
-##### Final Measures Aggregation:
+##### _Final Measures Aggregation:_
 Aggregate all computed measures into final tables for further analysis.
 
 #### Output Files
